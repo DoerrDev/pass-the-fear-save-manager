@@ -17,11 +17,11 @@ from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QHBoxLayout, Q
                                QStackedWidget, QSystemTrayIcon, QVBoxLayout, QWidget, QCheckBox, QDialog)
 
 from . import __version__, capture, core
-from .config import APP_DIR, Settings
+from .config import DATA_DIR, Settings
 from .core import SaveError, SaveStore, Snapshot, human_size
 from .dialogs import LoadDialog, SaveDialog, SettingsDialog, alert, ask_text, banner, button, confirm
 from .hotkey import GlobalHotkey
-from .theme import C, G, STYLESHEET, app_icon, apply_palette, glyph_icon, icon_font
+from .theme import C, G, STYLESHEET, app_icon, apply_palette, glyph_icon
 from .widgets import SNAP_ROLE, BusyOverlay, HeroImage, SnapshotDelegate, ThumbCache, Toast, friendly_time
 from .win32 import set_dark_titlebar
 
@@ -222,8 +222,8 @@ class MainWindow(QMainWindow):
         v = QVBoxLayout(w)
         v.addStretch(2)
         ic = QLabel(G.history)
-        ic.setFont(icon_font(64))
-        ic.setStyleSheet(f"color: {C.dim};")
+        # 全局样式表的 * 选择器会覆盖 setFont，图标字体只能写在样式表里
+        ic.setStyleSheet(f"color: {C.dim}; font-family: 'Segoe Fluent Icons', 'Segoe MDL2 Assets'; font-size: 64px;")
         ic.setAlignment(Qt.AlignmentFlag.AlignCenter)
         v.addWidget(ic)
         v.addSpacing(10)
@@ -655,7 +655,7 @@ def run() -> int:
         # pythonw 下没有控制台，未捕获的异常会被静默吞掉：写日志并提示
         text = "".join(traceback.format_exception(etype, value, tb))
         try:
-            with open(APP_DIR / "error.log", "a", encoding="utf-8") as f:
+            with open(DATA_DIR / "error.log", "a", encoding="utf-8") as f:
                 f.write(f"==== {datetime.now():%Y-%m-%d %H:%M:%S}\n{text}\n")
         except OSError:
             pass
@@ -663,7 +663,7 @@ def run() -> int:
 
     sys.excepthook = excepthook
 
-    lock = QLockFile(str(APP_DIR / ".savetool.lock"))
+    lock = QLockFile(str(DATA_DIR / ".savetool.lock"))
     if not lock.tryLock(100):
         alert(None, "已在运行", "存档管理器已经打开了，请在任务栏或系统托盘中找到它。")
         return 0

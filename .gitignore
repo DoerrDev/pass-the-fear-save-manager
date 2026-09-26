@@ -1,0 +1,12 @@
+# 打包产物
+build/
+dist/
+
+# 个人数据（存档库、设置、日志）
+backups/
+settings.json
+error.log
+.savetool.lock
+
+__pycache__/
+*.pyc

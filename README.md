@@ -16,28 +16,37 @@
 
 ## 一、安装
 
-### 运行环境
+使用前提：Windows 10 / 11，已通过 Steam 安装 Pass the Fear，并且**至少进过一次游戏**（游戏第一次运行后才会生成存档文件夹）。
 
-- Windows 10 / 11
-- Python 3.10 或更新版本（[下载 Python](https://www.python.org/downloads/)，安装时记得勾选 **Add Python to PATH**）
-- 已通过 Steam 安装 Pass the Fear，并且**至少进过一次游戏**（游戏第一次运行后才会生成存档文件夹）
+### 方式一：安装包（推荐，不需要 Python）
 
-### 安装依赖
+1. 在 [Releases](../../releases) 页面下载 `PassTheFearSaveManager-Setup-版本号.exe`。
+2. 双击运行，按提示点「下一步」即可。**不需要管理员权限**，默认装在 `%LOCALAPPDATA%\Programs\PassTheFearSaveManager`。
+3. 安装完成后，桌面和开始菜单里会出现「Pass the Fear 存档管理器」。
 
-在项目文件夹里打开命令行，执行：
+> Windows 可能会弹出「Windows 已保护你的电脑」：安装包没有数字签名，点「更多信息」→「仍要运行」即可。
+
+**升级**：直接运行新版安装包覆盖安装，存档和设置不会丢失。
+**卸载**：在「设置 → 应用」或开始菜单里卸载。卸载时会询问是否删除存档，默认保留。
+
+安装版的存档和设置放在 `%APPDATA%\PassTheFearSaveManager` 里（可以在地址栏输入这个路径直接打开）。
+
+### 方式二：从源码运行
+
+需要 Python 3.10 或更新版本（[下载 Python](https://www.python.org/downloads/)，安装时记得勾选 **Add Python to PATH**）。
+
+在项目文件夹里打开命令行，安装依赖（只需要装一次）：
 
 ```bash
 pip install -r requirements.txt
 ```
 
-只需要装一次，依赖是 `PySide6`（界面）和 `psutil`（检测游戏进程）。
+然后任选一种方式启动：
 
-### 启动
-
-两种方式任选：
-
-- **双击 `启动存档管理器.bat`**：推荐，不会弹出黑色的命令行窗口。
+- **双击 `启动存档管理器.bat`**：不会弹出黑色的命令行窗口。
 - 在命令行里运行 `python main.py`：出问题时能直接在命令行看到报错信息。
+
+从源码运行时，存档和设置放在项目文件夹里（`backups\`、`settings.json`）。
 
 程序同一时间只能开一个。如果提示「已在运行」，去任务栏或右下角的系统托盘里找它。
 
@@ -167,7 +176,7 @@ Pass the Fear 联机时由**房主**负责保存整队的进度，所以：
 | 设置项 | 说明 | 默认值 |
 | --- | --- | --- |
 | 游戏存档目录 | 游戏自己存档的位置 | `...\LocalLow\PlayMudStudio\Pass the fear\GameData` |
-| 存档库位置 | 存档管理器存放所有存档的地方 | 程序目录下的 `backups\` |
+| 存档库位置 | 存档管理器存放所有存档的地方 | 安装版：`%APPDATA%\PassTheFearSaveManager\backups`；源码版：项目目录下的 `backups\` |
 | 启动方式 | 通过 Steam 启动 / 直接运行游戏程序 | 通过 Steam |
 | 游戏程序 | `PassTheFear.exe` 的路径，可点「自动查找」 | 自动从 Steam 库里查找 |
 | 快捷键 | 全局快速存档快捷键，可以关闭 | `Ctrl+Alt+S` |
@@ -175,17 +184,20 @@ Pass the Fear 联机时由**房主**负责保存整队的进度，所以：
 | 关闭游戏后等待 Steam 云同步 | 关闭游戏后，等多久再写入存档 | 3 秒 |
 | 自动备份最多保留 | 「加载前自动备份」最多保留几个 | 10 个 |
 
-设置保存在程序目录下的 `settings.json` 里。
+设置保存在 `settings.json` 里，和存档库放在同一个数据目录（见[安装](#一安装)）。
 
 ---
 
 ## 七、文件说明
+
+下面是源码版的目录结构。安装版的 `settings.json`、`error.log` 和 `backups\` 在 `%APPDATA%\PassTheFearSaveManager` 里。
 
 ```text
 风暴怕死队存档项目/
 ├─ 启动存档管理器.bat     双击启动
 ├─ main.py               程序入口
 ├─ requirements.txt      依赖列表
+├─ packaging/            打包脚本（PyInstaller + NSIS）
 ├─ settings.json         你的设置（第一次保存设置后生成）
 ├─ error.log             错误日志（出错时才会生成）
 ├─ backups/              存档库
@@ -197,6 +209,34 @@ Pass the Fear 联机时由**房主**负责保存整队的进度，所以：
 ```
 
 **想备份所有存档**：直接复制整个 `backups\` 文件夹就行。换电脑时把它放回原位（或在设置里指向它），存档就都回来了。
+
+---
+
+## 八、自己打包安装包
+
+需要先装好 Python 依赖、PyInstaller 和 [NSIS](https://nsis.sourceforge.io/)：
+
+```bash
+pip install -r requirements.txt pyinstaller pillow
+scoop install nsis        # 或：winget install NSIS.NSIS
+```
+
+然后在项目根目录执行：
+
+```bash
+python packaging/build.py
+```
+
+打包分三步：生成图标 → PyInstaller 编译 → NSIS 生成安装包，大约需要两三分钟。产物放在 `dist\` 里：
+
+| 文件 | 说明 |
+| --- | --- |
+| `dist\PassTheFearSaveManager\` | 绿色版，整个文件夹复制走就能直接运行 |
+| `dist\PassTheFearSaveManager-Setup-版本号.exe` | 安装包（约 20 MB） |
+
+版本号在 `savetool/__init__.py` 的 `__version__` 里改。
+
+**便携模式**：在绿色版的 `PassTheFearSaveManager.exe` 旁边新建一个空文件 `portable.txt`，存档和设置就会放在程序文件夹里，不再写入 `%APPDATA%`，适合放在 U 盘里用。
 
 ---
 
