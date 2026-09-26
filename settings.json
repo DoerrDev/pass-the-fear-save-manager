@@ -1,0 +1,14 @@
+{
+  "save_dir": "C:\\Users\\pc\\AppData\\LocalLow\\PlayMudStudio\\Pass the fear\\GameData",
+  "backup_root": "D:\\Develop\\Code\\风暴怕死队存档项目\\backups",
+  "launch_method": "steam",
+  "game_exe": "d:\\program files (x86)\\steam\\steamapps\\common\\Pass The Fear\\PassTheFear.exe",
+  "hotkey_enabled": true,
+  "hotkey": "Ctrl+Alt+S",
+  "capture_screenshot": true,
+  "auto_backup_before_load": true,
+  "launch_after_load": true,
+  "auto_backup_keep": 10,
+  "close_timeout": 8,
+  "sync_wait": 3
+}
